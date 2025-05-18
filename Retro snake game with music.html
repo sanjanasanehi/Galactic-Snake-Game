@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dodge Snake</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    body {
+      background-color: #0c0c1a;
+      color: #fff;
+      font-family: 'Press Start 2P', cursive;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    canvas {
+      background-color: #0c0c1a;
+      border: 1px solid #fff; /* thinner border */
+      image-rendering: pixelated;
+      width: 600px;
+      height: 400px;
+      border-radius: 0; /* no curve */
+    }
+
+    h2 {
+      color: #ffef00;
+      font-size: 24px;
+      text-shadow: 2px 2px #e100ff;
+      margin-bottom: 10px;
+    }
+
+    #score {
+      font-size: 14px;
+      margin: 10px;
+      Margin-bottom: 20px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 25px; /* spacing below canvas */
+    }
+
+    button {
+      background-color: #e100ff;
+      color: #fff;
+      border: none;
+      padding: 14px 32px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      text-transform: uppercase;
+      box-shadow: 4px 4px 0 #8800aa;
+      Width: 160px;
+      Box-sizing: border-box;
+      Text-align: center;
+    }
+
+    #instructions, #note {
+      font-size: 10px;
+      margin-top: 25px; /* more space below buttons */
+      font-style: regular;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      canvas {
+        width: 90vw;
+        height: 60vw;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🕹️ Galactic Pixel Python 🕹️</h2>
+  <div id="score">Score: 0</div>
+
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+  <div class="button-row">
+    <button id="startBtn">Start Game</button>
+    <button id="muteBtn">Mute</button>
+  </div>
+
+  <div id="instructions">Use arrow keys to control the snake!</div>
+  <div id="note">The speed is not fast, it's just challenging ;)</div>
+
+  <audio id="eatSound" src="coin-257878.mp3"></audio>
+  <audio id="gameOverSound" src="kl-peach-game-over-ii-135684.mp3"></audio>
+  <audio id="bgMusic" src="exploration-chiptune-rpg-adventure-theme-336428.mp3" loop></audio>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreDisplay = document.getElementById("score");
+    const startBtn = document.getElementById("startBtn");
+    const muteBtn = document.getElementById("muteBtn");
+    const eatSound = document.getElementById("eatSound");
+    const gameOverSound = document.getElementById("gameOverSound");
+    const bgMusic = document.getElementById("bgMusic");
+
+    const gridSize = 20;
+    const tileCountX = canvas.width / gridSize;
+    const tileCountY = canvas.height / gridSize;
+
+    let snake, food, dx, dy, score, changingDirection;
+    let gameRunning = false;
+    let gameInterval;
+
+    function drawStars() {
+      for (let i = 0; i < 100; i++) {
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(
+          Math.random() * canvas.width,
+          Math.random() * canvas.height,
+          1, 1
+        );
+      }
+    }
+
+    function restartGame() {
+      gameOverSound.pause();       // Stop game over sound
+      gameOverSound.currentTime = 0;
+
+      snake = [{ x: 10, y: 10 }];
+      food = { x: 5, y: 5 };
+      dx = 1;
+      dy = 0;
+      score = 0;
+      scoreDisplay.textContent = "Score: 0";
+      changingDirection = false;
+      startBtn.textContent = "Restart";
+      gameRunning = true;
+
+      if (gameInterval) clearInterval(gameInterval);
+      gameInterval = setInterval(gameLoop, 150);
+
+      bgMusic.currentTime = 0;
+      if (!bgMusic.muted) {
+        bgMusic.play().catch(() => {});
+      }
+
+      drawGame();
+    }
+
+    function drawTile(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x * gridSize, y * gridSize, gridSize - 2, gridSize - 2);
+    }
+
+    function drawGame() {
+      ctx.fillStyle = "#0c0c1a";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawStars();
+
+      drawTile(food.x, food.y, "#ff005d");
+      snake.forEach(seg => drawTile(seg.x, seg.y, "#00ffff"));
+    }
+
+    function gameLoop() {
+      if (!gameRunning) return;
+
+      const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+      changingDirection = false;
+
+      if (
+        head.x < 0 || head.x >= tileCountX ||
+        head.y < 0 || head.y >= tileCountY ||
+        snake.some(seg => seg.x === head.x && seg.y === head.y)
+      ) {
+        gameOverSound.play();
+        bgMusic.pause();
+        alert("Game Over! Final Score: " + score);
+        gameRunning = false;
+        clearInterval(gameInterval);
+        startBtn.textContent = "Restart";
+        return;
+      }
+
+      snake.unshift(head);
+
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        scoreDisplay.textContent = "Score: " + score;
+        eatSound.play();
+        food = {
+          x: Math.floor(Math.random() * tileCountX),
+          y: Math.floor(Math.random() * tileCountY)
+        };
+      } else {
+        snake.pop();
+      }
+
+      drawGame();
+    }
+
+    function changeDirection(dir) {
+      if (changingDirection) return;
+      changingDirection = true;
+
+      switch (dir) {
+        case "up": if (dy === 0) { dx = 0; dy = -1; } break;
+        case "down": if (dy === 0) { dx = 0; dy = 1; } break;
+        case "left": if (dx === 0) { dx = -1; dy = 0; } break;
+        case "right": if (dx === 0) { dx = 1; dy = 0; } break;
+      }
+    }
+
+    document.addEventListener("keydown", e => {
+      switch (e.key) {
+        case "ArrowUp": changeDirection("up"); break;
+        case "ArrowDown": changeDirection("down"); break;
+        case "ArrowLeft": changeDirection("left"); break;
+        case "ArrowRight": changeDirection("right"); break;
+      }
+    });
+
+    startBtn.addEventListener("click", () => {
+      restartGame();
+    });
+
+    muteBtn.addEventListener("click", () => {
+      bgMusic.muted = !bgMusic.muted;
+      muteBtn.textContent = bgMusic.muted ? "Unmute" : "Mute";
+      if (!bgMusic.muted && gameRunning) {
+        bgMusic.play().catch(() => {});
+      }
+    });
+  </script>
+
+</body>
+</html>
