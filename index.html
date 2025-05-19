@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dodge Snake</title>
+  <title>Galactic Pixel Python</title>
   <link rel="icon" href="favicon.png" type="image/png" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -19,15 +19,15 @@
       height: 100vh;
       margin: 0;
       overflow: hidden;
+      text-align: center;
     }
 
     canvas {
       background-color: #0c0c1a;
-      border: 1px solid #fff; /* thinner border */
+      border: 1px solid #fff;
       image-rendering: pixelated;
       width: 600px;
       height: 400px;
-      border-radius: 0; /* no curve */
     }
 
     h2 {
@@ -40,13 +40,14 @@
     #score {
       font-size: 14px;
       margin: 10px;
-      Margin-bottom: 20px;
+      margin-bottom: 20px;
     }
 
     .button-row {
       display: flex;
       gap: 12px;
-      margin-top: 25px; /* spacing below canvas */
+      margin-top: 25px;
+      Margin-bottom: 25px;
     }
 
     button {
@@ -59,15 +60,17 @@
       font-weight: bold;
       text-transform: uppercase;
       box-shadow: 4px 4px 0 #8800aa;
-      Width: 160px;
-      Box-sizing: border-box;
-      Text-align: center;
+      width: 160px;
+      box-sizing: border-box;
+      text-align: center;
     }
 
-    #instructions, #note {
+    #instructions,
+    #note {
       font-size: 10px;
-      margin-top: 25px; /* more space below buttons */
       font-style: regular;
+      Margin-top: 0xp;
+      Margin-bottom: 10px;
       text-align: center;
     }
 
@@ -83,7 +86,6 @@
 
   <h2>🕹️ Galactic Pixel Python 🕹️</h2>
   <div id="score">Score: 0</div>
-
   <canvas id="gameCanvas" width="600" height="400"></canvas>
 
   <div class="button-row">
@@ -116,6 +118,9 @@
     let gameRunning = false;
     let gameInterval;
 
+    let highScore = localStorage.getItem("highScore") || 0;
+    let highScorePlayer = localStorage.getItem("highScorePlayer") || "—";
+
     function drawStars() {
       for (let i = 0; i < 100; i++) {
         ctx.fillStyle = '#fff';
@@ -127,8 +132,28 @@
       }
     }
 
+    function drawGame() {
+      ctx.fillStyle = "#0c0c1a";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawStars();
+
+      if (!gameRunning) return;
+
+      drawTile(food.x, food.y, "#ff005d");
+      snake.forEach(seg => drawTile(seg.x, seg.y, "#00ffff"));
+    }
+
+    function drawTile(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x * gridSize, y * gridSize, gridSize - 2, gridSize - 2);
+    }
+
+    function updateScoreDisplay() {
+      scoreDisplay.textContent = `Score: ${score} | High Score: ${highScore} (${highScorePlayer})`;
+    }
+
     function restartGame() {
-      gameOverSound.pause();       // Stop game over sound
+      gameOverSound.pause();
       gameOverSound.currentTime = 0;
 
       snake = [{ x: 10, y: 10 }];
@@ -136,7 +161,7 @@
       dx = 1;
       dy = 0;
       score = 0;
-      scoreDisplay.textContent = "Score: 0";
+      updateScoreDisplay();
       changingDirection = false;
       startBtn.textContent = "Restart";
       gameRunning = true;
@@ -152,20 +177,6 @@
       drawGame();
     }
 
-    function drawTile(x, y, color) {
-      ctx.fillStyle = color;
-      ctx.fillRect(x * gridSize, y * gridSize, gridSize - 2, gridSize - 2);
-    }
-
-    function drawGame() {
-      ctx.fillStyle = "#0c0c1a";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      drawStars();
-
-      drawTile(food.x, food.y, "#ff005d");
-      snake.forEach(seg => drawTile(seg.x, seg.y, "#00ffff"));
-    }
-
     function gameLoop() {
       if (!gameRunning) return;
 
@@ -178,6 +189,16 @@
         snake.some(seg => seg.x === head.x && seg.y === head.y)
       ) {
         gameOverSound.play();
+
+        if (score > highScore) {
+          const name = prompt("🎉 New High Score! Enter your name:");
+          highScore = score;
+          highScorePlayer = name || "Anonymous";
+          localStorage.setItem("highScore", highScore);
+          localStorage.setItem("highScorePlayer", highScorePlayer);
+          updateScoreDisplay(); // show new top immediately
+        }
+
         bgMusic.pause();
         alert("Game Over! Final Score: " + score);
         gameRunning = false;
@@ -190,7 +211,7 @@
 
       if (head.x === food.x && head.y === food.y) {
         score++;
-        scoreDisplay.textContent = "Score: " + score;
+        updateScoreDisplay();
         eatSound.play();
         food = {
           x: Math.floor(Math.random() * tileCountX),
@@ -235,6 +256,10 @@
         bgMusic.play().catch(() => {});
       }
     });
+
+    // Initial draw
+    updateScoreDisplay();
+    drawGame();
   </script>
 
 </body>
