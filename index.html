@@ -48,7 +48,7 @@
       display: flex;
       gap: 12px;
       margin-top: 25px;
-      margin-bottom: 25px;
+      margin-bottom: 15px;
     }
 
     button {
@@ -81,78 +81,60 @@
       transform: translate(-50%, -50%);
       background: #1e1e2f;
       border: 2px solid #e100ff;
-      padding: 24px;
+      padding: 24px 18px;
       color: white;
       z-index: 10;
       max-width: 90vw;
-      width: 300px;
-      font-size: 12px;
+      width: 320px;
+      font-size: 11px;
+      line-height: 1.6;
       display: none;
       box-shadow: 0 0 12px #e100ff;
+      text-align: left;
     }
 
     #popup button {
-      margin-top: 16px;
-      font-size: 10px;
+      display: block;
+      margin: 16px auto 0 auto;
+      font-size: 11px;
       width: auto;
       padding: 8px 20px;
     }
 
-    #popup .close-btn {
-      position: absolute;
-      top: 4px;
-      right: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      background: none;
-      border: none;
+    /* Mobile-only arrow controls */
+    .mobile-controls {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .arrow-row {
+      display: flex;
+      justify-content: center;
+      margin: 5px;
+    }
+
+    .mobile-controls button {
+      background-color: #8800aa;
       color: white;
-    }
-
-    /* Invisible control zones on mobile */
-    .tap-zone {
-      position: absolute;
-      z-index: 5;
-    }
-
-    .zone-top {
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 25%;
-    }
-
-    .zone-bottom {
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 25%;
-    }
-
-    .zone-left {
-      top: 25%;
-      bottom: 25%;
-      left: 0;
-      width: 25%;
-    }
-
-    .zone-right {
-      top: 25%;
-      bottom: 25%;
-      right: 0;
-      width: 25%;
-    }
-
-    @media (min-width: 601px) {
-      .tap-zone {
-        display: none;
-      }
+      border: none;
+      padding: 14px;
+      font-size: 20px;
+      margin: 0 10px;
+      border-radius: 6px;
+      box-shadow: 2px 2px #e100ff;
+      width: 60px;
     }
 
     @media (max-width: 600px) {
       canvas {
         width: 90vw;
         height: 60vw;
+      }
+
+      .mobile-controls {
+        display: flex;
       }
     }
   </style>
@@ -168,20 +150,27 @@
     <button id="muteBtn">Mute</button>
   </div>
 
-  <div id="note">The speed is not fast, it's just challenging ;)</div>
+  <!-- Mobile Arrow Controls -->
+  <div class="mobile-controls">
+    <div class="arrow-row">
+      <button onclick="changeDirection('up')">⬆️</button>
+    </div>
+    <div class="arrow-row">
+      <button onclick="changeDirection('left')">⬅️</button>
+      <button onclick="changeDirection('down')">⬇️</button>
+      <button onclick="changeDirection('right')">➡️</button>
+    </div>
+  </div>
 
-  <!-- Tap Zones for mobile -->
-  <div class="tap-zone zone-top" ontouchstart="changeDirection('up')"></div>
-  <div class="tap-zone zone-bottom" ontouchstart="changeDirection('down')"></div>
-  <div class="tap-zone zone-left" ontouchstart="changeDirection('left')"></div>
-  <div class="tap-zone zone-right" ontouchstart="changeDirection('right')"></div>
+  <div id="note">The speed is not fast, it's just challenging ;)</div>
 
   <!-- Popup -->
   <div id="popup">
-    <button class="close-btn" onclick="closePopup()">❌</button>
-    <p>🎮 Use arrow keys on desktop or tap on the screen edges on mobile to move the snake.</p>
-    <p>🍎 Eat the red food, avoid walls and yourself!</p>
-    <button onclick="closePopup()">Okay, Got it!</button>
+    <p>🎮 <strong>How to Play:</strong></p>
+    <p>Use arrow keys on desktop or tap the on-screen buttons on mobile to move the snake.</p>
+    <p>🍎 Eat the red food, avoid walls and your own tail.</p>
+    <p>🚀 Get ready for a nostalgic pixel adventure!</p>
+    <button onclick="closePopup()">Okay, Let’s Go!</button>
   </div>
 
   <audio id="eatSound" src="coin-257878.mp3"></audio>
