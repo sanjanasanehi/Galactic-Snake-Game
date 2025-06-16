@@ -47,7 +47,7 @@
       display: flex;
       gap: 12px;
       margin-top: 25px;
-      Margin-bottom: 25px;
+      margin-bottom: 25px;
     }
 
     button {
@@ -68,16 +68,44 @@
     #instructions,
     #note {
       font-size: 10px;
-      font-style: regular;
-      Margin-top: 0xp;
-      Margin-bottom: 10px;
+      margin-top: 0px;
+      margin-bottom: 10px;
       text-align: center;
+    }
+
+    .mobile-controls {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .arrow-row {
+      display: flex;
+      justify-content: center;
+      margin: 5px;
+    }
+
+    .mobile-controls button {
+      background-color: #8800aa;
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 20px;
+      margin: 0 10px;
+      border-radius: 6px;
+      box-shadow: 2px 2px #e100ff;
+      width: 60px;
     }
 
     @media (max-width: 600px) {
       canvas {
         width: 90vw;
         height: 60vw;
+      }
+
+      .mobile-controls {
+        display: flex;
       }
     }
   </style>
@@ -91,6 +119,18 @@
   <div class="button-row">
     <button id="startBtn">Start Game</button>
     <button id="muteBtn">Mute</button>
+  </div>
+
+  <!-- Mobile Arrow Controls -->
+  <div class="mobile-controls">
+    <div class="arrow-row">
+      <button onclick="changeDirection('up')">⬆️</button>
+    </div>
+    <div class="arrow-row">
+      <button onclick="changeDirection('left')">⬅️</button>
+      <button onclick="changeDirection('down')">⬇️</button>
+      <button onclick="changeDirection('right')">➡️</button>
+    </div>
   </div>
 
   <div id="instructions">Use arrow keys to control the snake!</div>
@@ -196,7 +236,7 @@
           highScorePlayer = name || "Anonymous";
           localStorage.setItem("highScore", highScore);
           localStorage.setItem("highScorePlayer", highScorePlayer);
-          updateScoreDisplay(); // show new top immediately
+          updateScoreDisplay();
         }
 
         bgMusic.pause();
@@ -257,10 +297,12 @@
       }
     });
 
-    // Initial draw
     updateScoreDisplay();
     drawGame();
   </script>
+</body>
+</html>
+
 
 </body>
 </html>
