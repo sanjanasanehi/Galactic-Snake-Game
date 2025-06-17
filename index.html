@@ -8,72 +8,73 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Press Start 2P', cursive;
       background-color: #0c0c1a;
       color: #fff;
-      font-family: 'Press Start 2P', cursive;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       height: 100vh;
-      margin: 0;
       overflow: hidden;
       text-align: center;
-      position: relative;
+    }
+
+    h2 {
+      margin: 20px 0 10px;
+      font-size: 18px;
+      color: #ffef00;
+      text-shadow: 2px 2px #e100ff;
+    }
+
+    #score {
+      font-size: 12px;
+      margin-bottom: 10px;
     }
 
     canvas {
       background-color: #0c0c1a;
-      border: 1px solid #fff;
+      border: 2px solid #fff;
       image-rendering: pixelated;
-      width: 600px;
-      height: 400px;
-    }
-
-    h2 {
-      color: #ffef00;
-      font-size: 24px;
-      text-shadow: 2px 2px #e100ff;
-      margin-bottom: 10px;
-    }
-
-    #score {
-      font-size: 14px;
-      margin: 10px;
-      margin-bottom: 20px;
+      width: 90vw;
+      max-width: 600px;
+      height: auto;
+      aspect-ratio: 3 / 2;
+      touch-action: none;
     }
 
     .button-row {
       display: flex;
+      justify-content: center;
       gap: 12px;
-      margin-top: 25px;
-      margin-bottom: 15px;
+      margin: 15px 0;
     }
 
     button {
       background-color: #e100ff;
       color: #fff;
       border: none;
-      padding: 14px 32px;
-      font-size: 12px;
-      cursor: pointer;
+      padding: 12px 24px;
+      font-size: 10px;
       font-weight: bold;
+      cursor: pointer;
       text-transform: uppercase;
-      box-shadow: 4px 4px 0 #8800aa;
-      width: 160px;
-      box-sizing: border-box;
-      text-align: center;
+      box-shadow: 3px 3px 0 #8800aa;
+      border-radius: 6px;
     }
 
     #note {
-      font-size: 10px;
-      margin-top: 0px;
-      margin-bottom: 10px;
-      text-align: center;
+      font-size: 9px;
+      margin-top: 5px;
     }
 
-    /* Popup styles */
     #popup {
       position: absolute;
       top: 50%;
@@ -81,60 +82,29 @@
       transform: translate(-50%, -50%);
       background: #1e1e2f;
       border: 2px solid #e100ff;
-      padding: 24px 18px;
+      padding: 20px;
       color: white;
       z-index: 10;
       max-width: 90vw;
       width: 320px;
       font-size: 11px;
-      line-height: 1.6;
-      display: none;
+      line-height: 1.5;
       box-shadow: 0 0 12px #e100ff;
+      display: none;
       text-align: left;
     }
 
     #popup button {
+      margin-top: 15px;
       display: block;
-      margin: 16px auto 0 auto;
-      font-size: 11px;
-      width: auto;
-      padding: 8px 20px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    /* Mobile-only arrow controls */
-    .mobile-controls {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 10px;
-    }
-
-    .arrow-row {
-      display: flex;
-      justify-content: center;
-      margin: 5px;
-    }
-
-    .mobile-controls button {
-      background-color: #8800aa;
-      color: white;
-      border: none;
-      padding: 14px;
-      font-size: 20px;
-      margin: 0 10px;
-      border-radius: 6px;
-      box-shadow: 2px 2px #e100ff;
-      width: 60px;
-    }
-
-    @media (max-width: 600px) {
+    @media (min-width: 601px) {
       canvas {
-        width: 90vw;
-        height: 60vw;
-      }
-
-      .mobile-controls {
-        display: flex;
+        width: 600px;
+        height: 400px;
       }
     }
   </style>
@@ -150,29 +120,18 @@
     <button id="muteBtn">Mute</button>
   </div>
 
-  <!-- Mobile Arrow Controls -->
-  <div class="mobile-controls">
-    <div class="arrow-row">
-      <button onclick="changeDirection('up')">⬆️</button>
-    </div>
-    <div class="arrow-row">
-      <button onclick="changeDirection('left')">⬅️</button>
-      <button onclick="changeDirection('down')">⬇️</button>
-      <button onclick="changeDirection('right')">➡️</button>
-    </div>
-  </div>
-
   <div id="note">The speed is not fast, it's just challenging ;)</div>
 
-  <!-- Popup -->
+  <!-- Instruction Popup -->
   <div id="popup">
     <p>🎮 <strong>How to Play:</strong></p>
-    <p>Use arrow keys on desktop or tap the on-screen buttons on mobile to move the snake.</p>
+    <p>Use <strong>arrow keys</strong> on desktop or <strong>swipe anywhere</strong> on mobile to move the snake.</p>
     <p>🍎 Eat the red food, avoid walls and your own tail.</p>
-    <p>🚀 Get ready for a nostalgic pixel adventure!</p>
+    <p>🚀 Ready for a retro challenge?</p>
     <button onclick="closePopup()">Okay, Let’s Go!</button>
   </div>
 
+  <!-- Audio -->
   <audio id="eatSound" src="coin-257878.mp3"></audio>
   <audio id="gameOverSound" src="kl-peach-game-over-ii-135684.mp3"></audio>
   <audio id="bgMusic" src="exploration-chiptune-rpg-adventure-theme-336428.mp3" loop></audio>
@@ -321,6 +280,35 @@
         case "ArrowLeft": changeDirection("left"); break;
         case "ArrowRight": changeDirection("right"); break;
       }
+    });
+
+    // Touch swipe for mobile
+    let touchStartX = null;
+    let touchStartY = null;
+
+    canvas.addEventListener("touchstart", function (e) {
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+    });
+
+    canvas.addEventListener("touchmove", function (e) {
+      if (!touchStartX || !touchStartY) return;
+
+      const touch = e.touches[0];
+      const diffX = touch.clientX - touchStartX;
+      const diffY = touch.clientY - touchStartY;
+
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 10) changeDirection("right");
+        else if (diffX < -10) changeDirection("left");
+      } else {
+        if (diffY > 10) changeDirection("down");
+        else if (diffY < -10) changeDirection("up");
+      }
+
+      touchStartX = null;
+      touchStartY = null;
     });
 
     startBtn.addEventListener("click", () => {
