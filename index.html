@@ -3,244 +3,113 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Galactic Pixel Python</title>
-  <link rel="icon" href="favicon.png" type="image/png" />
+  <title>Enhanced Snake Game</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-    * {
-      box-sizing: border-box;
-    }
-
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Press Start 2P', cursive;
-      background-color: #0c0c1a;
-      color: #fff;
+      background-color: #000;
+      color: #0f0;
+      font-family: monospace;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
       height: 100vh;
+      margin: 0;
       overflow: hidden;
-      text-align: center;
     }
-
+    canvas {
+      background-color: #111;
+      border: 2px solid #0f0;
+    }
     h2 {
-      margin: 20px 0 10px;
-      font-size: 18px;
-      color: #ffef00;
-      text-shadow: 2px 2px #e100ff;
-    }
-
-    #score {
-      font-size: 12px;
+      color: #0f0;
       margin-bottom: 10px;
     }
-
-    canvas {
-      background-color: #0c0c1a;
-      border: 2px solid #fff;
-      image-rendering: pixelated;
-      width: 90vw;
-      max-width: 600px;
-      height: auto;
-      aspect-ratio: 3 / 2;
-      touch-action: none;
+    #score {
+      color: #0f0;
+      font-size: 20px;
     }
-
-    .button-row {
+    .controls {
       display: flex;
+      gap: 20px;
+      margin-top: 10px;
+      flex-wrap: wrap;
       justify-content: center;
-      gap: 12px;
-      margin: 15px 0;
     }
-
-    button {
-      background-color: #e100ff;
-      color: #fff;
+    .btn {
+      background-color: #0f0;
+      color: #000;
       border: none;
-      padding: 12px 24px;
-      font-size: 10px;
-      font-weight: bold;
-      cursor: pointer;
-      text-transform: uppercase;
-      box-shadow: 3px 3px 0 #8800aa;
-      border-radius: 6px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
     }
-
-    #note {
-      font-size: 9px;
-      margin-top: 5px;
-    }
-
-    #popup {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #1e1e2f;
-      border: 2px solid #e100ff;
-      padding: 20px;
-      color: white;
-      z-index: 10;
-      max-width: 90vw;
-      width: 320px;
-      font-size: 11px;
-      line-height: 1.5;
-      box-shadow: 0 0 12px #e100ff;
-      display: none;
-      text-align: left;
-    }
-
-    #popup button {
-      margin-top: 15px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    @media (min-width: 601px) {
+    @media (max-width: 600px) {
       canvas {
-        width: 600px;
-        height: 400px;
+        width: 90vw;
+        height: 90vw;
       }
     }
   </style>
 </head>
 <body>
 
-  <h2>🕹️ Galactic Pixel Python 🕹️</h2>
+  <h2>🐍 Snake Game</h2>
   <div id="score">Score: 0</div>
-  <canvas id="gameCanvas" width="600" height="400"></canvas>
-
-  <div class="button-row">
-    <button id="startBtn">Start Game</button>
-    <button id="muteBtn">Mute</button>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <div class="controls">
+    <button class="btn" onclick="changeDirection('up')">⬆️</button>
+    <button class="btn" onclick="changeDirection('left')">⬅️</button>
+    <button class="btn" onclick="changeDirection('down')">⬇️</button>
+    <button class="btn" onclick="changeDirection('right')">➡️</button>
   </div>
 
-  <div id="note">The speed is not fast, it's just challenging ;)</div>
-
-  <!-- Instruction Popup -->
-  <div id="popup">
-    <p>🎮 <strong>How to Play:</strong></p>
-    <p>Use <strong>arrow keys</strong> on desktop or <strong>swipe anywhere</strong> on mobile to move the snake.</p>
-    <p>🍎 Eat the red food, avoid walls and your own tail.</p>
-    <p>🚀 Ready for a retro challenge?</p>
-    <button onclick="closePopup()">Okay, Let’s Go!</button>
-  </div>
-
-  <!-- Audio -->
-  <audio id="eatSound" src="coin-257878.mp3"></audio>
-  <audio id="gameOverSound" src="kl-peach-game-over-ii-135684.mp3"></audio>
-  <audio id="bgMusic" src="exploration-chiptune-rpg-adventure-theme-336428.mp3" loop></audio>
+  <audio id="eatSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+  <audio id="gameOverSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const scoreDisplay = document.getElementById("score");
-    const startBtn = document.getElementById("startBtn");
-    const muteBtn = document.getElementById("muteBtn");
     const eatSound = document.getElementById("eatSound");
     const gameOverSound = document.getElementById("gameOverSound");
-    const bgMusic = document.getElementById("bgMusic");
-    const popup = document.getElementById("popup");
 
     const gridSize = 20;
-    const tileCountX = canvas.width / gridSize;
-    const tileCountY = canvas.height / gridSize;
+    const tileCount = canvas.width / gridSize;
 
-    let snake, food, dx, dy, score, changingDirection;
-    let gameRunning = false;
-    let gameInterval;
-
-    let highScore = localStorage.getItem("highScore") || 0;
-    let highScorePlayer = localStorage.getItem("highScorePlayer") || "—";
-
-    function drawStars() {
-      for (let i = 0; i < 100; i++) {
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(
-          Math.random() * canvas.width,
-          Math.random() * canvas.height,
-          1, 1
-        );
-      }
-    }
-
-    function drawGame() {
-      ctx.fillStyle = "#0c0c1a";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      drawStars();
-
-      if (!gameRunning) return;
-
-      drawTile(food.x, food.y, "#ff005d");
-      snake.forEach(seg => drawTile(seg.x, seg.y, "#00ffff"));
-    }
+    let snake = [{ x: 10, y: 10 }];
+    let food = { x: 5, y: 5 };
+    let dx = 0;
+    let dy = 0;
+    let score = 0;
+    let changingDirection = false;
 
     function drawTile(x, y, color) {
       ctx.fillStyle = color;
       ctx.fillRect(x * gridSize, y * gridSize, gridSize - 2, gridSize - 2);
     }
 
-    function updateScoreDisplay() {
-      scoreDisplay.textContent = `Score: ${score} | High Score: ${highScore} (${highScorePlayer})`;
-    }
-
-    function restartGame() {
-      gameOverSound.pause();
-      gameOverSound.currentTime = 0;
-
-      snake = [{ x: 10, y: 10 }];
-      food = { x: 5, y: 5 };
-      dx = 1;
-      dy = 0;
-      score = 0;
-      updateScoreDisplay();
-      changingDirection = false;
-      startBtn.textContent = "Restart";
-      gameRunning = true;
-
-      if (gameInterval) clearInterval(gameInterval);
-      gameInterval = setInterval(gameLoop, 150);
-
-      bgMusic.currentTime = 0;
-      if (!bgMusic.muted) {
-        bgMusic.play().catch(() => {});
-      }
-
-      drawGame();
-    }
-
     function gameLoop() {
-      if (!gameRunning) return;
+      requestAnimationFrame(gameLoop);
+
+      if (++gameLoop.frame % 10 !== 0) return;
+
+      if (dx === 0 && dy === 0) return;
 
       const head = { x: snake[0].x + dx, y: snake[0].y + dy };
       changingDirection = false;
 
       if (
-        head.x < 0 || head.x >= tileCountX ||
-        head.y < 0 || head.y >= tileCountY ||
+        head.x < 0 || head.x >= tileCount ||
+        head.y < 0 || head.y >= tileCount ||
         snake.some(seg => seg.x === head.x && seg.y === head.y)
       ) {
         gameOverSound.play();
-
-        if (score > highScore) {
-          const name = prompt("🎉 New High Score! Enter your name:");
-          highScore = score;
-          highScorePlayer = name || "Anonymous";
-          localStorage.setItem("highScore", highScore);
-          localStorage.setItem("highScorePlayer", highScorePlayer);
-          updateScoreDisplay();
-        }
-
-        bgMusic.pause();
         alert("Game Over! Final Score: " + score);
-        gameRunning = false;
-        clearInterval(gameInterval);
-        startBtn.textContent = "Restart";
+        snake = [{ x: 10, y: 10 }];
+        dx = dy = 0;
+        score = 0;
+        scoreDisplay.textContent = "Score: 0";
         return;
       }
 
@@ -248,18 +117,23 @@
 
       if (head.x === food.x && head.y === food.y) {
         score++;
-        updateScoreDisplay();
+        scoreDisplay.textContent = "Score: " + score;
         eatSound.play();
         food = {
-          x: Math.floor(Math.random() * tileCountX),
-          y: Math.floor(Math.random() * tileCountY)
+          x: Math.floor(Math.random() * tileCount),
+          y: Math.floor(Math.random() * tileCount)
         };
       } else {
         snake.pop();
       }
 
-      drawGame();
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      drawTile(food.x, food.y, "#f00");
+      snake.forEach(seg => drawTile(seg.x, seg.y, "#0f0"));
     }
+    gameLoop.frame = 0;
 
     function changeDirection(dir) {
       if (changingDirection) return;
@@ -282,56 +156,8 @@
       }
     });
 
-    // Touch swipe for mobile
-    let touchStartX = null;
-    let touchStartY = null;
-
-    canvas.addEventListener("touchstart", function (e) {
-      const touch = e.touches[0];
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
-    });
-
-    canvas.addEventListener("touchmove", function (e) {
-      if (!touchStartX || !touchStartY) return;
-
-      const touch = e.touches[0];
-      const diffX = touch.clientX - touchStartX;
-      const diffY = touch.clientY - touchStartY;
-
-      if (Math.abs(diffX) > Math.abs(diffY)) {
-        if (diffX > 10) changeDirection("right");
-        else if (diffX < -10) changeDirection("left");
-      } else {
-        if (diffY > 10) changeDirection("down");
-        else if (diffY < -10) changeDirection("up");
-      }
-
-      touchStartX = null;
-      touchStartY = null;
-    });
-
-    startBtn.addEventListener("click", () => {
-      restartGame();
-    });
-
-    muteBtn.addEventListener("click", () => {
-      bgMusic.muted = !bgMusic.muted;
-      muteBtn.textContent = bgMusic.muted ? "Unmute" : "Mute";
-      if (!bgMusic.muted && gameRunning) {
-        bgMusic.play().catch(() => {});
-      }
-    });
-
-    function closePopup() {
-      popup.style.display = "none";
-    }
-
-    window.onload = () => {
-      popup.style.display = "block";
-      updateScoreDisplay();
-      drawGame();
-    };
+    requestAnimationFrame(gameLoop);
   </script>
+
 </body>
 </html>
